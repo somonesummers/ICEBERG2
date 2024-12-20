@@ -29,6 +29,7 @@ C     === Global variables ===
 #include "GRID.h"
 #include "DYNVARS.h"
 #include "FFIELDS.h"
+#include "ICEBERG_SIZE.h"
 #include "ICEBERG.h"
 
 C     !INPUT/OUTPUT PARAMETERS:
@@ -83,26 +84,6 @@ C     icebergTendS3D :: salt tendency from all icebergs (psy s^-1)
 C     icebergMeltRate3D :: cell-average melt rate from all icebergs (m d^-1)
 C
       INTEGER I,J,K,bi,bj,n, cellNum, numBergs, bergBottomCell
-      CHARACTER*19 dummy1
-      CHARACTER*20 dummy2
-      CHARACTER*19 dummy3
-      CHARACTER*23 depthName
-      CHARACTER*23 widthName
-      CHARACTER*24 lengthName
-      CHARACTER*5 cellNumStr
-      CHARACTER*5 cellNumStub
-      CHARACTER*19 fileName1
-      CHARACTER*19 fileName2
-      CHARACTER*19 fileName3
-      CHARACTER*19 fileName4
-      CHARACTER*19 fileName5
-      CHARACTER*19 fileName6
-      CHARACTER*23 fileName_melt
-      CHARACTER*23 fileName_fw
-      CHARACTER*23 fileName_hf
-      CHARACTER*23 fileName_spd1
-      CHARACTER*23 fileName_spd2
-      CHARACTER*23 fileName_spd3
       _RL bergDepth, bergLength, bergWidth
       _RL cellBottomDepth
       _RL remainder
@@ -113,7 +94,6 @@ C
       _RL a, b, c, Sb, Tb
       _RL mdot_long_axis, mdot_short_axis, mdot_base
       _RL fw_long_axis, fw_short_axis, fw_base
-      _RL hf_long_axis, hf_short_axis, hf_base
       _RL fw_berg, fw_cell
       _RL fw_berg_cumecs
       _RL melt_rate_berg
@@ -126,10 +106,9 @@ C
       _RL tProf(1:Nr)
       _RL sProf(1:Nr)
       _RL pProf(1:Nr)
-      _RL depth_list(1:10000)
-      _RL width_list(1:10000)
-      _RL length_list(1:10000)
-      INTEGER r1, r2, r3, r4, r5, r6, r7, r8, r9
+      _RL depth_list(1:maxBergCt)
+      _RL width_list(1:maxBergCt)
+      _RL length_list(1:maxBergCt)
       PARAMETER(rho_0=1027.0D0)
       LOGICAL DIFFERENT_MULTIPLE, THERE
 
@@ -141,7 +120,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 C     Prepare for melt rate calc
        a = brg_lambda1*(brg_GamT*brg_c_w-brg_GamS*brg_c_i)
        eps5 = mass2rUnit/HeatCapacity_Cp
-	  
+      
 C===============================================================================
 C Pre-allocate
 C===============================================================================
@@ -160,7 +139,7 @@ C===============================================================================
       ENDDO
       ENDDO
       ENDDO  
-	
+    
 C===============================================================================
 C Enter main loops
 C===============================================================================
@@ -174,61 +153,13 @@ C ------------------------- Preliminaries -----------------------------
 C------------------------------------------------------------------
 C    Check if there are icebergs
        IF ( abs(icebergMask(I,J,bi,bj)) .EQ. 1 ) THEN
-	 
+     
 C     Get iceberg cell number and number of icebergs in this cell
        cellNum = icebergMaskNums(I,J,bi,bj)
        numBergs = icebergNumBergs(I,J,bi,bj)
-	   
+       
        IF ( numBergs .GT. 0 ) THEN
-		
-C     Create text file names for reading
-       IF ( cellNum .LT. 10 ) THEN
-         write(cellNumStr, '(I1)') cellNum ! Convert cell number to a string
-         cellNumStub = "0000" // cellNumStr
-         dummy1 = "iceberg_depth_0000" // cellNumStr
-         depthName = dummy1 // ".txt"
-         dummy2 = "iceberg_length_0000" // cellNumStr
-         lengthName = dummy2 // ".txt"
-         dummy3 = "iceberg_width_0000" // cellNumStr
-         widthName = dummy3 // ".txt"
-       ELSEIF ( cellNum .GE. 10 .AND. cellNum .LT. 100 ) THEN
-         write(cellNumStr, '(I2)') cellNum ! Convert cell number to a string
-         cellNumStub = "000" // cellNumStr
-         dummy1 = "iceberg_depth_000" // cellNumStr
-         depthName = dummy1 // ".txt"
-         dummy2 = "iceberg_length_000" // cellNumStr
-         lengthName = dummy2 // ".txt"
-         dummy3 = "iceberg_width_000" // cellNumStr
-         widthName = dummy3 // ".txt"
-       ELSEIF ( cellNum .GE. 100 .AND. cellNum .LT. 1000 ) THEN
-         write(cellNumStr, '(I3)') cellNum ! Convert cell number to a string
-         cellNumStub = "00" // cellNumStr
-         dummy1 = "iceberg_depth_00" // cellNumStr
-         depthName = dummy1 // ".txt"
-         dummy2 = "iceberg_length_00" // cellNumStr
-         lengthName = dummy2 // ".txt"
-         dummy3 = "iceberg_width_00" // cellNumStr
-         widthName = dummy3 // ".txt"
-       ELSEIF ( cellNum .GE. 1000 .AND. cellNum .LT. 10000 ) THEN
-         write(cellNumStr, '(I4)') cellNum ! Convert cell number to a string
-         cellNumStub = "0" // cellNumStr
-         dummy1 = "iceberg_depth_0" // cellNumStr
-         depthName = dummy1 // ".txt"
-         dummy2 = "iceberg_length_0" // cellNumStr
-         lengthName = dummy2 // ".txt"
-         dummy3 = "iceberg_width_0" // cellNumStr
-         widthName = dummy3 // ".txt"
-       ELSE 
-         write(cellNumStr, '(I5)') cellNum ! Convert cell number to a string
-         cellNumStub = cellNumStr
-         dummy1 = "iceberg_depth_" // cellNumStr
-         depthName = dummy1 // ".txt"
-         dummy2 = "iceberg_length_" // cellNumStr
-         lengthName = dummy2 // ".txt"
-         dummy3 = "iceberg_width_" // cellNumStr
-         widthName = dummy3 // ".txt"
-       ENDIF
-	   
+        
 C      Pre-allocate profile output
        DO K = 1,Nr
         fwProf(K) = 0. _d 0
@@ -236,7 +167,7 @@ C      Pre-allocate profile output
         sProf(K) = 0. _d 0
         pProf(K) = 0. _d 0
        ENDDO
-	   
+       
 C      Get profiles of temperature and salinity
        DO K = 1, Nr
        pProf(K) = ABS(rC(K))*rho_0*9.81*1.0E-6 ! Pressure (dbar)
@@ -244,74 +175,19 @@ C      Get profiles of temperature and salinity
        sProf(K) = salt(I,J,K,bi,bj)
        tProf(K) = SW_TEMP(sProf(K),tProf(K),pProf(K),0.D0) ! Turn potential temperature into in-situ temperature.
        ENDDO
-	   
+       
 C     Pre-allocate berg geometry profiles
-      DO n = 1,10000
+      DO n = 1,maxBergCt
         depth_list(n) = 0. _d 0
         length_list(n) = 0. _d 0
         width_list(n) = 0. _d 0
       ENDDO
-	   
-C     Create unique numbers for reading berg geometry text files
-      r1 = 7
-      r2 = 8
-      r3 = 9
-C     Loop through bergs and make profiles of iceberg depth
-      open (UNIT=r1, FILE=depthName)
-      open (UNIT=r2, FILE=lengthName)
-      open (UNIT=r3, FILE=widthName)
+       
       DO n = 1,numBergs
-C      - iceberg depth
-        read(r1,*) bergDepth
-        depth_list(n) = bergDepth
-C      - iceberg length
-        read(r2,*) bergLength
-        length_list(n) = bergLength
-C      - iceberg width
-        read(r3,*) bergWidth
-        width_list(n) = bergWidth
-      ENDDO
-C     Close berg geometry text files
-      close(r1)
-      close(r2)
-      close(r3)
-	  
-C     Make output text files for this cell
-       fileName1 = "iceberg_mltRt_" // cellNumStub
-       fileName_melt = fileName1 // ".txt"
-       fileName2 = "iceberg_fwFlx_" // cellNumStub
-       fileName_fw = fileName2 // ".txt"   
-       fileName3 = "iceberg_htFlx_" // cellNumStub
-       fileName_hf = fileName3 // ".txt"
-       fileName4 = "iceberg_spdla_" // cellNumStub
-       fileName_spd1 = fileName4 // ".txt"
-       fileName5 = "iceberg_spdsa_" // cellNumStub
-       fileName_spd2 = fileName5 // ".txt"
-       fileName6 = "iceberg_spdba_" // cellNumStub
-       fileName_spd3 = fileName6 // ".txt"
-	   
-C      Assign units for reading text files (must be specific to each cell
-        r4 = i + j + bi + bj + 10
-        r5 = i + j + bi + bj + 11
-        r6 = i + j + bi + bj + 12
-        r7 = i + j + bi + bj + 13
-        r8 = i + j + bi + bj + 14
-        r9 = i + j + bi + bj + 15
-		
-C     Open text files for writing - open once per cell
-        open (UNIT=r4, FILE=fileName_melt, 
-     &          FORM='FORMATTED', ACCESS='APPEND')
-        open (UNIT=r5, FILE=fileName_fw, 
-     &          FORM='FORMATTED', ACCESS='APPEND')
-        open (UNIT=r6, FILE=fileName_hf, 
-     &          FORM='FORMATTED', ACCESS='APPEND')
-        open (UNIT=r7, FILE=fileName_spd1, 
-     &          FORM='FORMATTED', ACCESS='APPEND')
-        open (UNIT=r8, FILE=fileName_spd2, 
-     &          FORM='FORMATTED', ACCESS='APPEND')
-        open (UNIT=r9, FILE=fileName_spd3, 
-     &          FORM='FORMATTED', ACCESS='APPEND')
-
+        depth_list(n) = icebergDepths(I,J,n,bi,bj)
+        length_list(n) = icebergLength(I,J,n,bi,bj)
+        width_list(n) = icebergWidths(I,J,n,bi,bj)
+      ENDDO 
 
 C --- ENTER BERG LOOPS ---
       DO n = 1,numBergs
@@ -323,7 +199,7 @@ C     Read text files for:
       bergDepth = depth_list(n) 
       bergLength = length_list(n)
       bergWidth = width_list(n)
-		
+        
 C    Determine cell containing base of iceberg
        bergBottomCell = 0
        DO K = 1,Nr
@@ -332,8 +208,8 @@ C    Determine cell containing base of iceberg
      &      .AND. bergBottomCell .EQ. 0 ) THEN
           bergBottomCell = K
         ENDIF
-       ENDDO	  
-	   
+       ENDDO      
+       
 C     Print value to screen
 C      print *, 'Berg bottom cell is', bergBottomCell
 
@@ -371,15 +247,16 @@ C     - Estimate iceberg drift velocity
 
 C --- ENTER VERTICAL LOOP ---
 C    Loop down through water column and calculate melt rate
+      IF (meltMask(i,j,bi,bj) .EQ. 1) THEN ! only if calculating melt here
       DO K = 1,Nr
       IF ( abs(K) .LE. abs(bergBottomCell) ) THEN ! only calculate melt if a berg is in this cell
-	   
+       
 C -----------------------------------------------------------------
 C -------------------------- berg area -------------------------------
 C------------------------------------------------------------------
 C     Calculate surface area of each iceberg face
        IF ( K .EQ. bergBottomCell ) THEN
-	     remainder = bergDepth - (abs(rC(K))-(drF(K)/2.0D0)) ! calculate how much iceberg protrudes into cell containing iceberg base
+         remainder = bergDepth - (abs(rC(K))-(drF(K)/2.0D0)) ! calculate how much iceberg protrudes into cell containing iceberg base
          long_face_area = bergLength * remainder
          short_face_area = bergWidth * remainder
          base_area = bergLength * bergWidth
@@ -419,7 +296,7 @@ C     - Get relative current velocity at this depth
      &           + uVel(I,J,K,bi,bj)**2.0D0 )
         ENDIF
        ENDIF    
-	   
+       
 C    - Make sure current speeds are greater than background velocity (sides only because plumes rise along sides - not clear how melt-driven convection would affect water velocity at iceberg base?)
        IF ( rel_speed_la .LT. icebergBGvel ) THEN
         rel_speed_la = icebergBGvel
@@ -437,7 +314,7 @@ C    - Make sure current speeds are greater than background velocity (sides only
 C -----------------------------------------------------------------
 C ----------------------- Calculate melt rate --------------------------
 C------------------------------------------------------------------
-	  
+      
       b = brg_GamS*brg_c_i
      &       *(brg_lambda1*sProf(K)-brg_lambda2-brg_lambda3*rC(K)+
      &       brg_iceTemp-(brg_L/brg_c_i))
@@ -452,10 +329,10 @@ C    Temperature and salinity forcing at ice-ocean interface
 C     Print values to screen
       Sb = (1./(2.*a))*(-b-((b**2.-4.*a*c)**0.5))
       Tb = brg_lambda1*Sb+brg_lambda2+brg_lambda3*rC(K)
-	  
+      
 C     Catch case of zero Sb
       Sb = MAX(Sb, 1.0D-3)
-	  
+      
 C    Melt rate
       mdot_long_axis = brg_GamS*(brg_Cd**0.5)
      &       *rel_speed_la*(sProf(K)-Sb)/Sb ! mdot (long axis)
@@ -467,7 +344,7 @@ C    Melt rate
       ELSE
         mdot_base = 0. _d 0
       ENDIF
-	  
+      
 C    Convert to m d^-1
       mdot_long_axis = 86400.*mdot_long_axis
       mdot_short_axis = 86400.*mdot_short_axis
@@ -483,46 +360,27 @@ C     Convert to freshwater flux (m^3 s^-1)
       ELSE
         fw_base = 0. _d 0 
       ENDIF
-		
+        
 C     Get total freshwater flux from this berg in this cell (m^3 s^-1)
       fw_berg_cumecs = fw_long_axis + fw_short_axis + fw_base
-		
+        
 C     Get average melt rate for single iceberg in this cell (m d^-1)
       melt_rate_berg = (fw_berg_cumecs/berg_area)
      &       *86400.*(rho_0/1000.)
-	 
+     
 C     Convert from m^3 s^-1 to kg m^-2 s^-1
 C      fw_berg = 1000.*(fw_berg_cumecs/-berg_area)
       fw_berg = -melt_rate_berg/94.22
-	   
+       
 C     Heat required to melt that much ice (W m^-2)
       hf_berg = -fw_berg*333.55E+3
-	   
+       
 C     Get cell-totals and cell-averages
       fwProf(K) = fwProf(K) + fw_berg_cumecs
-	  
-	  
-C     Write berg output to text files
-       IF ( DIFFERENT_MULTIPLE(dumpFreq, myTime, deltaTClock) ) THEN   
-C      Print iceberg geometry data to text file
-        write(r4,*) melt_rate_berg, bergDepth, bergLength,
-     &          bergWidth, cellNum, myIter, k
-        write(r5,*) fw_berg_cumecs, bergDepth, bergLength,
-     &          bergWidth, cellNum, myIter, k
-        write(r6,*) hf_berg, bergDepth, bergLength,
-     &          bergWidth, cellNum, myIter, k
-        write(r7,*) rel_speed_la, bergDepth, bergLength,
-     &          bergWidth, cellNum, myIter, k
-        write(r8,*) rel_speed_sa, bergDepth, bergLength,
-     &          bergWidth, cellNum, myIter, k
-        write(r9,*) rel_speed_base, bergDepth, bergLength,
-     &          bergWidth, cellNum, myIter, k
-      ENDIF ! Stop checking if time is at dumpFreq   
-	   
-	   
-	   
+      
+       
       ELSE ! berg doesn't reach this far down the water column
-	   
+       
 C     Set variables to 0
       melt_rate_berg = 0.D0
       fw_berg_cumecs = 0.D0
@@ -531,39 +389,27 @@ C     Set variables to 0
       rel_speed_sa = 0.D0
       rel_speed_base = 0.D0
       fwProf(K) = fwProf(K)
-        
-C     Write zeros to text file
-C     Write berg output to text files
-       IF ( DIFFERENT_MULTIPLE(dumpFreq, myTime, deltaTClock) ) THEN
-        write(r4,*) melt_rate_berg, bergDepth, bergLength,
-     &          bergWidth, cellNum, myIter, k
-        write(r5,*) fw_berg_cumecs, bergDepth, bergLength,
-     &          bergWidth, cellNum, myIter, k
-        write(r6,*) hf_berg, bergDepth, bergLength,
-     &          bergWidth, cellNum, myIter, k
-        write(r7,*) rel_speed_la, bergDepth, bergLength,
-     &          bergWidth, cellNum,  myIter, k
-        write(r8,*) rel_speed_sa, bergDepth, bergLength,
-     &          bergWidth, cellNum, myIter, k
-        write(r9,*) rel_speed_base, bergDepth, bergLength,
-     &          bergWidth, cellNum, myIter, k
-      ENDIF ! Stop checking if time is at dumpFreq
-	 
-	 
+     
+     
       ENDIF ! Stop checking if berg extends to this depth
       ENDDO ! stop looping through water column
-	   
-	  
+      ENDIF ! stop checking for melt calc 
+      
       ENDDO ! Stop looping through icebergs
-	  
-C     Close output text files
-      close(r4)
-      close(r5)
-      close(r6)
-      close(r7)
-      close(r8)
-      close(r9) 
-	  
+      
+C C     Probably wrong place, but force update hfacC
+C        IF ( ICEBERGopenFracFile .NE. ' ' ) THEN
+C         CALL READ_REC_XYZ_RL
+C      &     (ICEBERGopenFracFile,openFraction,1,0,myThid)  
+C C             If we want to make icebergs physical barriers
+C                IF ( barrierMask(I,J,bi,bj) .GT. 0. _d 0 ) THEN
+C C              Loop through water column
+C                 DO K = 1, Nr
+C                   hFacC(I,J,K,bi,bj) = openFraction(I,J,K,bi,bj)
+C                 ENDDO
+C                ENDIF
+C        ENDIF 
+      
 
 C -----------------------------------------------------------------
 C ------------------- Calculate variables of interest ----------------------
@@ -573,40 +419,39 @@ C --- we can calculate the cell-average melt rate and cell-total heat flux and t
 C --- for heat and salt. 
 C     Loop through water column again and calculate variables of interest
       DO K = 1,Nr
-	  
+      
       icebergFWFlux3D(I,J,K,bi,bj) = fwProf(K) ! m^3 s^-1
-	  
+      
 C    Only calculate if necessary
       IF ( abs(icebergFWFlux3D(I,J,K,bi,bj)) .GT. 0.D0 ) THEN
-		
+        
 C    Convert freshwater (m^3 s^-1) to melt rate (m d^-1)
       icebergMeltRate3D(I,J,K,bi,bj) = 
      &       (icebergFWFlux3D(I,J,K,bi,bj)/icebergArea3D(I,J,K,bi,bj))
      &       *86400.*(rho_0/1000.)
-	 
+     
 C     Convert melt rate (m d^-1) to freshwater (kg m^-2 s^-1)
        fw_cell = -icebergMeltRate3D(I,J,K,bi,bj)/94.22
-	   
-C     Heat required to melt this much ice (W m^-2)
+       
+C     Heat required to melt this much ice (W m^-2 meters of berg, not model)
        icebergHeatFlux3D(I,J,K,bi,bj) = -fw_cell*333.55E+3
 
 C     Compute tendencies
       tendT_berg = -icebergHeatFlux3D(I,J,K,bi,bj)*eps5
       tendS_berg = fw_cell*mass2rUnit
      &       *MAX(salt(I,J,K,bi,bj), 0.D0)
-	   
+       
 C     Scale by 'icefrontlength': in icefront, this is the ratio of the horizontal length
 C     of the ice front in each model grid cell divided by the grid cell area
 C     (icefrontlength = dy/dxdy = 1/dx)
 C     Or simply the area of ice in the cell divided by the volume of the cell
       icebergTendT3D(I,J,K,bi,bj) = tendT_berg 
      &      * ( icebergArea3D(I,J,K,bi,bj)
-     &     / (dxG(I,J,bi,bj) * dyG(I,J,bi,bj) * abs(drF(K))) )
+     &     / (dxG(I,J,bi,bj) * dyG(I,J,bi,bj) * abs(drF(K))) )  ! volume of cell
       icebergTendS3D(I,J,K,bi,bj) = tendS_berg 
      &      * ( icebergArea3D(I,J,K,bi,bj)
      &     / (dxG(I,J,bi,bj) * dyG(I,J,bi,bj) * abs(drF(K))) )
-	 
-
+     
       ENDIF ! stop checking for freshwater (if not, then these variables are already set to 0)
 
       ENDDO ! stop looping through water column
@@ -614,13 +459,11 @@ C     Or simply the area of ice in the cell divided by the volume of the cell
 
       ENDIF ! stop checking number of bergs
       ENDIF ! check if bergs are in this cell
-	  
+      
       ENDDO
       ENDDO
       ENDDO
       ENDDO
-	  
-	  
 
 C     Write to diagnostics
 #ifdef ALLOW_DIAGNOSTICS
@@ -631,8 +474,35 @@ C     Write to diagnostics
      &      0,Nr,0,1,1,myThid)
           CALL DIAGNOSTICS_FILL_RS(icebergHeatFlux3D,'BRGhtFlx',
      &      0,Nr,0,1,1,myThid)
+          CALL DIAGNOSTICS_FILL_RS(hFacC,'BRGhFacC',
+     &      0,Nr,0,1,1,myThid)
          ENDIF
 #endif /* ALLOW_DIAGNOSTICS */
+
+
+C       IF ( ICEBERGopenFracFile .NE. ' ' ) THEN
+C         CALL READ_REC_XYZ_RL
+C      &     (ICEBERGopenFracFile,openFraction,1,0,myThid)  
+C C          Partially block cells filled by icebergs
+C            DO bj = myByLo(myThid), myByHi(myThid)
+C             DO bi = myBxLo(myThid), myBxHi(myThid)
+C              DO J = 1, sNy
+C               DO I = 1, sNx
+  
+C C             If we want to make icebergs physical barriers
+C                IF ( barrierMask(I,J,bi,bj) .GT. 0. _d 0 ) THEN
+C C              Loop through water column
+C                 DO K = 1, Nr
+C                   hFacC(I,J,K,bi,bj) = openFraction(I,J,K,bi,bj)
+C                 ENDDO
+C                ENDIF
+C               ENDDO
+C              ENDDO
+C             ENDDO
+C            ENDDO
+C         CALL UPDATE_MASKS_ETC(myThid)
+C       ENDIF 
+
 
 
 #endif /* ALLOW_ICEBERG */

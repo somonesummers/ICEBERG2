@@ -18,6 +18,7 @@ C     === Global variables ===
 #include "EEPARAMS.h"
 #include "PARAMS.h"
 #include "GRID.h"
+#include "ICEBERG_SIZE.h"
 #include "ICEBERG.h"
 #ifdef ALLOW_COST
 # include "ICEBERG_COST.h"
@@ -30,25 +31,34 @@ CEndOfInterface
 
 #ifdef ALLOW_ICEBERG
 C     === Local variables ===
-C     i,j,bi,bj - Loop counters
+C     i,j,bi,bj,K - Loop counters
       INTEGER i, j, bi, bj, K
 CEOP
 
+C     Update the spatially varying version of the drag coefficient
+C     brg_CDragFld could be used in iceberg_thermodynamics
+C     brg_CDragQuadFld used in iceberg_u/v_drag_coeff
       DO bj = myByLo(myThid), myByHi(myThid)
        DO bi = myBxLo(myThid), myBxHi(myThid)
         DO j = 1-OLy, sNy+OLy
          DO i = 1-OLx, sNx+OLx
           DO K = 1,Nr
            icebergHeatFlux3D      (i,j,K,bi,bj) = 0. _d 0
-           icebergFWFlux3D        (i,j,K,bi,bj) = 0. _d 0	
-           icebergMeltRate3D      (i,j,k,bi,bj) = 0. _d 0
-           icebergTendT3D         (i,j,K,bi,bj) = 0. _d 0	
-           icebergTendS3D         (i,j,K,bi,bj) = 0. _d 0	
-          ENDDO
-         ENDDO
-        ENDDO
-       ENDDO
-      ENDDO
+           icebergFWFlux3D        (i,j,K,bi,bj) = 0. _d 0
+           icebergMeltRate3D      (i,j,K,bi,bj) = 0. _d 0
+           icebergTendT3D         (i,j,K,bi,bj) = 0. _d 0
+           icebergTendS3D         (i,j,K,bi,bj) = 0. _d 0
+#ifdef ALLOW_DIAGNOSTICS
+            IF ( useDiagnostics ) THEN
+             icebergDragU(i,j,k,bi,bj) = 0.
+             icebergDragV(i,j,k,bi,bj) = 0.
+            ENDIF
+#endif /* ALLOW_DIAGNOSTICS */
+          ENDDO !k
+         ENDDO !i
+        ENDDO !j
+       ENDDO !bi
+      ENDDO !bj
 
 
 

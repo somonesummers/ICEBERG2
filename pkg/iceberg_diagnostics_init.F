@@ -64,6 +64,13 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )
 
+      diagName  = 'BRGarea3D'
+      diagTitle = 'Iceberg surface area               '
+      diagUnits = 'm^2             '
+      diagCode  = 'SM      MR      '
+      CALL DIAGNOSTICS_ADDTOLIST( diagNum,
+     I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
       diagName  = 'BRG_TauX'
       diagTitle = 
      &     'Iceberg bottom stress, zonal. comp., >0 ++uVel'
@@ -81,6 +88,11 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
       diagMate  = diagNum
       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )
+
+#ifdef ALLOW_PER_BERG_DIAG
+C     Could implement per berg diagnostics here
+#endif /* ALLOW_PER_BERG_DIAG */      
+
 
 #endif /* ALLOW_DIAGNOSTICS */
 

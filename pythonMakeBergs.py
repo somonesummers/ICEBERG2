@@ -57,7 +57,13 @@ nx = 80 # 15 km long
 ny = 12 # 10 km wide (plus 500 m walls)
 nz = 50 # 1000 m deep
 
-dz = np.ones(nz)*deltaZ
+
+# dz = np.ones(nz)*deltaZ
+dz_tmp = np.linspace(1,5,nz)
+dz = dz_tmp/np.sum(dz_tmp)*1000 
+sum_z = np.cumsum(dz)
+print("dz: \n",dz)
+print("z: \n",sum_z)
 
 #makeMasks
 bergMask = np.zeros([ny,nx])
@@ -258,7 +264,7 @@ setUpPrint('Max fill is: %.2f%%' % (np.nanmax(icebergs_area_per_cell/(deltaX*del
 openFrac = np.zeros([nz,ny,nx])
 SA = np.zeros([nz,ny,nx])
 SA[:,:,:] = np.nan
-cellVolume = deltaX*deltaY*deltaZ
+
 
 #This loop knows where all bergs are already, different from searching for all bergs across entire grid
 for i in range(bergMaski):
@@ -269,10 +275,11 @@ for i in range(bergMaski):
         widths = icebergs_widths[i,icebergs_widths[i,:] > 0] #return only non-zeros
         depths = icebergs_depths[i,icebergs_depths[i,:] > 0] #return only non-zeros
         for k in range(nz):
-            d_bot = k*deltaZ + deltaZ #bottom of depth bin
-            d_top = k*deltaZ
-            volume1 = deltaZ * lengths[depths > d_bot] * widths[depths > d_bot]
-            SA1 = deltaZ*2*(lengths[depths > d_bot] + widths[depths > d_bot])
+            cellVolume = deltaX*deltaY*dz[k]
+            d_bot = sum_z[k] #bottom of depth bin
+            d_top = sum_z[k] - dz[k]
+            volume1 = dz[k] * lengths[depths > d_bot] * widths[depths > d_bot]
+            SA1 = dz[k]*2*(lengths[depths > d_bot] + widths[depths > d_bot])
             partialFill = (depths < d_bot) & (depths > d_top)
             #partial fill
             volume2 = (depths[partialFill] - d_top) * lengths[partialFill] * widths[partialFill]
@@ -291,10 +298,10 @@ for i in range(bergMaski):
 fig = plt.figure()
 plt.subplot(2,2,1)
 for i in range(bergMaski):
-    plt.plot(openFrac[:,bergDict[i+1][0],bergDict[i+1][1]],-np.cumsum(dz),alpha=.5,color='xkcd:gray',linewidth=.5)
-plt.plot(np.mean(openFrac[:,bergMask==1],1),-np.cumsum(dz),alpha=1,color='xkcd:black',linewidth=1,linestyle='--',label='Average Bergs')
+    plt.plot(openFrac[:,bergDict[i+1][0],bergDict[i+1][1]],-sum_z,alpha=.5,color='xkcd:gray',linewidth=.5)
+plt.plot(np.mean(openFrac[:,bergMask==1],1),-sum_z,alpha=1,color='xkcd:black',linewidth=1,linestyle='--',label='Average Bergs')
 plt.plot([0,1],[-maxBergDepth,-maxBergDepth],color = 'xkcd:red',linestyle=':', label='Target Max Depth')
-plt.plot([1-np.max(bergConc)/100,1-np.max(bergConc)/100],[-nz*deltaZ,0],color = 'xkcd:gray',linestyle=':',label='Target Max Berg Conc')
+plt.plot([1-np.max(bergConc)/100,1-np.max(bergConc)/100],[-1000,0],color = 'xkcd:gray',linestyle=':',label='Target Max Berg Conc')
 plt.xlabel('Open Fraction of Cells')
 plt.ylabel('Depth [m]')
 # plt.legend()  #not quite room so off for now

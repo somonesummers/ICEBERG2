@@ -1,4 +1,4 @@
-This package is n current work in progress extending the ICEBERG package for MITgcm which can be found here ( Davison 2020, https://zenodo.org/records/3979647)
+This package is a current work in progress extending the ICEBERG package for MITgcm which can be found here ( Davison 2020, https://zenodo.org/records/3979647)
 Key additions in this package:
   - Addition of iceberg physical blocking based on parameterizations from Hughes 2022 (https://doi.org/10.1029/2021JC018228)
   including new diagnostic fields for iceberg drag in X and Y directions.

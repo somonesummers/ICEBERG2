@@ -18,13 +18,13 @@ Installation is similar to any non-standard MITgcm package
 
 Recommended structure:
 
-MITgcm
-|  experiment
-|   |   build
-|   |   code
-|   |    | _copy contents of code directory here.
-|   |   input
-|   |    | _copy contents of input directory here, execute 'pythonMakeBergs.py' here. *MUST* update domain size in this script to agree with your model domain.
-|   |   results
-| pkg
-|   |   _copy entire 'iceberg' directory here. 
+        MITgcm
+        |  experiment
+        |   |   build
+        |   |   code
+        |   |    | _copy contents of code directory here._
+        |   |   input
+        |   |    | _copy contents of input directory here, execute 'pythonMakeBergs.py' here. *MUST* update domain size in this script to agree with your model domain._
+        |   |   results
+        | pkg
+        |   |   _copy entire 'iceberg' directory here._ 

@@ -11,7 +11,19 @@ This work is still a work in progress, and will be moved to a zenodo DOI reposit
 Any questions can be directed to Paul Summers (paul.summers@rutgers.edu) 
 
 Installation is similar to any non-standard MITgcm package
-  - Copy 'ICERBERG/pkg' directory contents to a folder called 'ICEBERG' inside the 'MITgcm/pkg' directory
-  - Copy files in 'code' to the code folder of your local experiment folder (recommended), or overwrite the version in the existing 'pkg' or 'src' folders of your main MITgcm folder (be careful with this option)
-  - Use 'pythonMakeBergs.py' to generate files needed for in the 'input'.
-  - Currently the format of data.iceberg is missing, from this directory, I will add soon
+  - Copy '/pkg/iceberg' directory and contents into the 'MITgcm/pkg' directory
+  - Copy files in 'code' to the code folder of your local experiment directory (recommended), or overwrite the version in the existing 'MITgcm/pkg' or 'MITgcm/src' directories of your main MITgcm folder (be careful with this option)
+  - Use 'pythonMakeBergs.py' to generate files needed in the 'input' directory.
+  - Use the data.iceberg file in the 'input' directory of your experiment directory
+
+Recommended structure:
+
+MITgcm
+|  experiment
+|   |   build
+|   |   code
+|   |    | _copy contents of code directory here._
+|   |   input
+|   |    | _copy contents of input directory here, execute 'pythonMakeBergs.py' here. *MUST* update domain size in this script to agree with your model domain._
+|   |   results
+| pkg

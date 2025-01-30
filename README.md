@@ -10,6 +10,8 @@ Key additions in this package:
 This work is still a work in progress, and will be moved to a zenodo DOI repository once finalized.
 Any questions can be directed to Paul Summers (paul.summers@rutgers.edu) 
 
+Main development was run on MITgcm checkpoint 68z, last run for compatibility on checkpoint69c, last tested Jan 27 2025. 
+
 Installation is similar to any non-standard MITgcm package
   - Copy '/pkg/iceberg' directory and contents into the 'MITgcm/pkg' directory
   - Copy files in 'code' to the code folder of your local experiment directory (recommended), or overwrite the version in the existing 'MITgcm/pkg' or 'MITgcm/src' directories of your main MITgcm folder (be careful with this option)

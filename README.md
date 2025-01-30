@@ -3,6 +3,7 @@ Key additions in this package:
   - Addition of iceberg physical blocking based on parameterizations from Hughes 2022 (https://doi.org/10.1029/2021JC018228)
   including new diagnostic fields for iceberg drag in X and Y directions.
   - Acceleration of the thermodynamics code and streamlining of configuation files (all berg geometries now in 3 binary files)
+  - Per iceberg statistics are off by default, but available as build time option
   - Addition of diagnostic for Iceberg surface area
   - New check of global configuration files to ensure hFac values are not reset
   - Iceberg melting can now be controlled with a mask as a runtime parameter

@@ -30,7 +30,7 @@ def setUpPrint(msg):
 def write_bin(fname, data):
     setUpPrint(fname + " " + str(np.shape(data)))
     if(writeFiles):
-        data.astype(">f8").tofile(run_config['run_dir']+'/input/'+fname)
+        data.astype(">f8").tofile(fname)
     else:
         setUpPrint('Not saving')
 
@@ -317,7 +317,7 @@ plt.ylabel('Count')
 plt.xlabel('Length [m]')
 fig.tight_layout()
 if(writeFiles):
-    plt.savefig(run_config['run_dir']+'/input/bergStatistics.png', format='png', dpi=200)
+    plt.savefig('bergStatistics.png', format='png', dpi=200)
 plt.show()
 
 fig = plt.figure()
@@ -340,7 +340,7 @@ plt.ylabel('Cell across fjord')
 cbar.set_label('cover resid')
 fig.tight_layout()
 if(writeFiles):
-    plt.savefig(run_config['run_dir']+'/input/bergMap.png', format='png', dpi=200)
+    plt.savefig('bergMap.png', format='png', dpi=200)
 plt.show()
 
 fig = plt.figure()
@@ -351,20 +351,20 @@ plt.ylabel('Cell across fjord')
 plt.xlabel("Cell along fjord")
 fig.tight_layout()
 if(writeFiles):
-    plt.savefig(run_config['run_dir']+'/input/meltMask.png', format='png', dpi=200)
+    plt.savefig('meltMask.png', format='png', dpi=200)
 plt.show()
 
 ## write iceberg txt files
 # setUpPrint('Saving text files for bergs...')
 # if(writeFiles):
 #     for i in range(bergMaski):
-#         with open(run_config['run_dir'] + '/input/iceberg_depth_%05i.txt' % (i+1) , 'w') as file_handler:
+#         with open('iceberg_depth_%05i.txt' % (i+1) , 'w') as file_handler:
 #             for item in icebergs_depths[i,icebergs_depths[i,:] > 0]:
 #                 file_handler.write("{}\n".format(item))
-#         with open(run_config['run_dir']+'/input/iceberg_width_%05i.txt' % (i+1) , 'w') as file_handler:
+#         with open('iceberg_width_%05i.txt' % (i+1) , 'w') as file_handler:
 #             for item in icebergs_widths[i,icebergs_widths[i,:] > 0]:
 #                 file_handler.write("{}\n".format(item))
-#         with open(run_config['run_dir'] + '/input/iceberg_length_%05i.txt' % (i+1) , 'w') as file_handler:
+#         with open('iceberg_length_%05i.txt' % (i+1) , 'w') as file_handler:
 #             for item in icebergs_length[i,icebergs_length[i,:] > 0]:
 #                 file_handler.write("{}\n".format(item))
 

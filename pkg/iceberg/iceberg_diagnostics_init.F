@@ -44,8 +44,8 @@ C     diagTitle :: local string (80c): description of field in diagnostic
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
       diagName  = 'BRGfwFlx'
-      diagTitle = 'Iceberg freshwater flux (+ve increases ocean salt)'
-      diagUnits = 'kg/m^2/s        '
+      diagTitle = 'Iceberg freshwater flux '
+      diagUnits = 'm^3/s        '
       diagCode  = 'SM      MR      '
       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )

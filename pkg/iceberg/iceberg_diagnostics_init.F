@@ -44,8 +44,8 @@ C     diagTitle :: local string (80c): description of field in diagnostic
 C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
       diagName  = 'BRGfwFlx'
-      diagTitle = 'Iceberg freshwater flux '
-      diagUnits = 'm^3/s        '
+      diagTitle = 'Iceberg freshwater flux'
+      diagUnits = 'm^3/s           '
       diagCode  = 'SM      MR      '
       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
      I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )
@@ -58,7 +58,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
      I     diagName, diagCode, diagUnits, diagTitle, 0, myThid )
  
       diagName  = 'BRGmltRt'
-      diagTitle = 'Iceberg melt rate  (+ve cools ocean)              '
+      diagTitle = 'Iceberg melt rate              '
       diagUnits = 'm/d             '
       diagCode  = 'SM      MR      '
       CALL DIAGNOSTICS_ADDTOLIST( diagNum,
@@ -73,7 +73,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
       diagName  = 'BRG_TauX'
       diagTitle = 
-     &     'Iceberg bottom stress, zonal. comp., >0 ++uVel'
+     &     'Iceberg drag stress, zonal. comp., >0 ++uVel'
       diagUnits = 'N/m^2           '
       diagCode  = 'UU      MR      '
       diagMate  = diagNum + 2
@@ -82,7 +82,7 @@ C---+----1----+----2----+----3----+----4----+----5----+----6----+----7-|--+----|
 
       diagName  = 'BRG_TauY'
       diagTitle = 
-     &     'Iceberg bottom stress, merid. comp., >0 ++vVel'
+     &     'Iceberg drag stress, merid. comp., >0 ++vVel'
       diagUnits = 'N/m^2           '
       diagCode  = 'VV      MR      '
       diagMate  = diagNum
